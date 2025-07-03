@@ -94,6 +94,8 @@ In Proceedings of Interspeech 2023, pp. 3607–3611.
 https://doi.org/10.21437/Interspeech.2023-293
 ```
 
-💬 Contact
+### Results are stored in results.txt for your reference.
+
+# 💬 Contact
 For questions or collaborations, please open an issue or contact [40921126l@ntnu.edu.tw].
 
