@@ -88,7 +88,7 @@ Let `MS` be missed speech, `FA` be false alarms, and `CONF` be emotion or speake
 \text{sTEER} = \frac{\text{MS} + \text{FA} + \text{CONF}_{\text{emo+spk}}}{\text{TOTAL}}
 \]
 
-##📚 Citation for Evaluation Metric
+## 📚 Citation for Evaluation Metric
 TEER and sTEER are computed using an extension of the diarization error metrics introduced by:
 ```bash
 Wu, W., Zhang, C., & Woodland, P. C. (2023).
