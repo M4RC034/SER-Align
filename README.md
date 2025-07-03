@@ -78,15 +78,11 @@ We report:
 
 ### TEER Formulas
 
-Let `MS` be missed speech, `FA` be false alarms, and `CONF` be emotion or speaker confusion:
+Let `MS` be missed speech, `FA` be false alarms, and `CONF` be confusion error:
 
-\[
-\text{TEER} = \frac{\text{MS} + \text{FA} + \text{CONF}_{\text{emo}}}{\text{TOTAL}}
-\]
+- `TEER  = (MS + FA + CONF_emo) / TOTAL`
+- `sTEER = (MS + FA + CONF_emo+spk) / TOTAL`
 
-\[
-\text{sTEER} = \frac{\text{MS} + \text{FA} + \text{CONF}_{\text{emo+spk}}}{\text{TOTAL}}
-\]
 
 ## 📚 Citation for Evaluation Metric
 TEER and sTEER are computed using an extension of the diarization error metrics introduced by:
