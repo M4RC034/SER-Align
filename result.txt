@@ -73,6 +73,34 @@ sTEER = (MS + FA + CONF_spk) / TOTAL = 0.9108 (91.08%)
 
 Total Overlap Duration (for EERa):      3600.36 s
 
+
+
+
+
+--- Evaluation Results without alignment but with fine-tuned embedding extractor---
+
+Accuracy: 0.5682
+Weighted F1-Score: 0.5387
+Macro F1-Score: 0.4710
+
+Confusion Matrix:
+[[74  2  1 26]
+ [ 3  9  0 16]
+ [19  2  8 24]
+ [33  7  0 84]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+         hap       0.57      0.72      0.64       103
+         ang       0.45      0.32      0.38        28
+         sad       0.89      0.15      0.26        53
+         neu       0.56      0.68      0.61       124
+
+    accuracy                           0.57       308
+   macro avg       0.62      0.47      0.47       308
+weighted avg       0.61      0.57      0.54       308
+
 Emotion Error on Agreement (EERa)  = 0.1875 (18.75%)
 
 Emo+Spk Error on Agreement (sEERa) = 0.2132 (21.32%)
