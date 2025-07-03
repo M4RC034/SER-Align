@@ -1,6 +1,5 @@
+# 🔄 This repository will be updated prior to the IALP 2025 conference.
 # SER-Align
-
-***We plan to update this repository before the IALP 2025 conference to reflect final experiments and any improvements based on the camera-ready version.***
 
 📄 Paper for **Enhancing Speech Emotion Recognition Leveraging Aligning Timestamps of ASR Transcripts and Speaker Diarization**  
 🗓️ Accepted at **IALP 2025**
