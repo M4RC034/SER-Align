@@ -1,0 +1,78 @@
+--- Evaluation Results (Classification Metrics) ---
+
+Accuracy: 0.6681
+
+Weighted F1-Score: 0.6688
+
+Macro F1-Score: 0.6648
+
+
+
+Confusion Matrix:
+
+[[348  14  57  85]
+
+ [ 14 146  28  65]
+
+ [ 37  12 282  51]
+
+ [ 55  32  87 305]]
+
+
+
+Classification Report:
+
+              precision    recall  f1-score   support
+
+
+
+         hap       0.77      0.69      0.73       504
+
+         ang       0.72      0.58      0.64       253
+
+         sad       0.62      0.74      0.67       382
+
+         neu       0.60      0.64      0.62       479
+
+
+
+    accuracy                           0.67      1618
+
+   macro avg       0.68      0.66      0.66      1618
+
+weighted avg       0.68      0.67      0.67      1618
+
+
+
+--- TEER & sTEER Calculation Finished ---
+
+
+
+--- Overall System Performance (On Target Emotions) ---
+
+Total Target Reference Speech Duration: 5564.76 seconds
+
+---------------------------------------------
+
+Missed Speech (MS) Duration:      1964.40 s
+
+False Alarm (FA) Duration:        2336.18 s
+
+Emotion Confusion (CONF_emo):     675.06 s
+
+Emo+Spk Confusion (CONF_emo+spk): 767.69 s
+
+---------------------------------------------
+
+TEER  = (MS + FA + CONF_emo) / TOTAL  = 0.8941 (89.41%)
+
+sTEER = (MS + FA + CONF_spk) / TOTAL = 0.9108 (91.08%)
+
+
+--- Downstream Classifier Performance (On Agreed-Upon Speech) ---
+
+Total Overlap Duration (for EERa):      3600.36 s
+
+Emotion Error on Agreement (EERa)  = 0.1875 (18.75%)
+
+Emo+Spk Error on Agreement (sEERa) = 0.2132 (21.32%)
