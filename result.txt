@@ -52,18 +52,6 @@ weighted avg       0.68      0.67      0.67      1618
 
 Total Target Reference Speech Duration: 5564.76 seconds
 
----------------------------------------------
-
-Missed Speech (MS) Duration:      1964.40 s
-
-False Alarm (FA) Duration:        2336.18 s
-
-Emotion Confusion (CONF_emo):     675.06 s
-
-Emo+Spk Confusion (CONF_emo+spk): 767.69 s
-
----------------------------------------------
-
 TEER  = (MS + FA + CONF_emo) / TOTAL  = 0.8941 (89.41%)
 
 sTEER = (MS + FA + CONF_spk) / TOTAL = 0.9108 (91.08%)
