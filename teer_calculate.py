@@ -152,7 +152,7 @@ def main():
         print(f"Emotion+Speaker Conf. (CONF_emo+spk): {total_conf_emo_spk:.2f} s")
         print("-" * 45)
         print(f"TEER  = (MS + FA + CONF_emo) / TOTAL  = {teer:.4f} ({teer*100:.2f}%)")
-        print(f"sTEER = (MS + FA + CONF_spk) / TOTAL  = {steer:.4f} ({steer*100:.2f}%)")
+        print(f"sTEER = (MS + FA + CONF_emo+spk) / TOTAL  = {steer:.4f} ({steer*100:.2f}%)")
 
         print("\n--- Classifier Performance (Overlap Regions Only) ---")
         print(f"Overlap Duration for EERa:         {total_intersection_emo_duration:.2f} s")
