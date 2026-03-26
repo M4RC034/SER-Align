@@ -65,7 +65,7 @@ class TimestampAligner:
         return data
 
     def _group_words_into_turns(self, all_words: list):
-    # """Groups a flat list of words into turns based on speaker and pause duration."""
+        """Groups a flat list of words into turns based on speaker and pause duration."""
         if not all_words:
             return []
 
@@ -263,48 +263,6 @@ class Wav2VecAudioEmbedder(nn.Module):
     # .encode() may no longer be used directly by FullModel in this workflow
 
 
-class Wav2VecAudioEmbedder(nn.Module):
-    def __init__(self,
-                 model_name: str = "facebook/wav2vec2-base",
-                 device: torch.device = None):
-        super().__init__()
-        self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print(f"Wav2Vec2 using device: {self.device} (FINE-TUNING ENABLED)")
-        self.processor = Wav2Vec2Processor.from_pretrained(model_name)
-        self.model = Wav2Vec2Model.from_pretrained(model_name)  # Model is not moved to device here
-        self.hidden_size = self.model.config.hidden_size
-        # Removed self.model.eval()
-
-    # forward now receives output from the processor
-    def forward(self, input_values: torch.Tensor, attention_mask: torch.Tensor | None = None) -> torch.Tensor:
-        # Removed @torch.no_grad()
-        outputs = self.model(input_values=input_values, attention_mask=attention_mask)
-        return outputs.last_hidden_state
-
-    def mean_pool(self, hidden: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
-        # Ensure mask matches hidden’s shape
-        # hidden: (B, S_proc, D), mask: (B, S_proc)
-        mask_expanded = mask.unsqueeze(-1)  # (B, S_proc) -> (B, S_proc, 1)
-        summed = (hidden * mask_expanded).sum(dim=1)
-        lengths = mask_expanded.sum(dim=1).clamp(min=1)
-        return summed / lengths
-
-    # .encode() might no longer be called directly from FullModel
-    def mean_pool(self, hidden: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
-        mask = mask.unsqueeze(-1)
-        summed = (hidden * mask).sum(dim=1)
-        lengths = mask.sum(dim=1).clamp(min=1)
-        return summed / lengths
-
-    def encode(self,
-               waveforms: Union[torch.Tensor, List[np.ndarray], List[torch.Tensor]],
-               sampling_rate: int = 16_000) -> torch.Tensor:
-        # forward now returns (last_hidden, attention_mask_for_pooling)
-        last_hidden, attention_mask_for_pooling = self.forward(waveforms, sampling_rate)
-        pooled = self.mean_pool(last_hidden, attention_mask_for_pooling)
-        return pooled.unsqueeze(1)
-
-
 # --- Feature Extractor Class (NEW) ---
 
 # Place this in your utils.py file
@@ -362,73 +320,73 @@ class FeatureExtractor:
         with open(json_path, 'r', encoding='utf-8') as f:
             return json.load(f)
 
-def extract(self, aligned_json_path: str, audio_path: str) -> Tuple[torch.Tensor | None, torch.Tensor | None]:
-    """
-    Extracts text and audio embeddings for all segments.
+    def extract(self, aligned_json_path: str, audio_path: str) -> Tuple[torch.Tensor | None, torch.Tensor | None]:
+        """
+        Extracts text and audio embeddings for all segments.
 
-    Args:
-        aligned_json_path (str): Path to the aligned transcript JSON file.
-        audio_path (str): Path to the original audio file.
+        Args:
+            aligned_json_path (str): Path to the aligned transcript JSON file.
+            audio_path (str): Path to the original audio file.
 
-    Returns:
-        tuple[torch.Tensor | None, torch.Tensor | None]: A tuple containing:
-            - text_embeddings: Tensor of shape (batch_size, 1, 768) or None if error.
-            - audio_embeddings: Tensor of shape (batch_size, 1, 768) or None if error.
-    """
-    try:
-        aligned_data = self._load_aligned_data(aligned_json_path)
-        if not aligned_data:
-            print(f"    - Warning: No aligned data found in {aligned_json_path}. Skipping feature extraction for this file.")
+        Returns:
+            tuple[torch.Tensor | None, torch.Tensor | None]: A tuple containing:
+                - text_embeddings: Tensor of shape (batch_size, 1, 768) or None if error.
+                - audio_embeddings: Tensor of shape (batch_size, 1, 768) or None if error.
+        """
+        try:
+            aligned_data = self._load_aligned_data(aligned_json_path)
+            if not aligned_data:
+                print(f"    - Warning: No aligned data found in {aligned_json_path}. Skipping feature extraction for this file.")
+                return None, None
+                    
+            full_waveform = self._load_audio(audio_path)  # full_waveform is on self.device
+
+            texts = []
+            audio_slices_on_device = [] 
+
+            print(f"    - Preparing text and audio slices for {os.path.basename(audio_path)}...")
+            for i, segment in enumerate(aligned_data):
+                texts.append(segment['sentence'])
+                slice_tensor = self._slice_audio(full_waveform, segment['start'], segment['end'])
+                audio_slices_on_device.append(slice_tensor)
+                # --- DEBUG ---
+                print(f"      DEBUG Extractor: Slice {i} for seg start {segment['start']:.2f} has shape {slice_tensor.shape}, dtype {slice_tensor.dtype}, device {slice_tensor.device}")
+                if slice_tensor.numel() == 0:
+                    print(f"      WARNING Extractor: Slice {i} is empty (numel=0)!")
+                # --- END DEBUG ---
+            
+            if not texts:
+                print(f"    - Warning: No text sentences found in aligned data for {os.path.basename(audio_path)}. Skipping feature extraction.")
+                return None, None
+            
+            if not audio_slices_on_device:
+                print(f"    - Warning: No audio slices prepared for {os.path.basename(audio_path)}. Skipping feature extraction.")
+                return None, None
+            
+            for i, s_tensor in enumerate(audio_slices_on_device):
+                if s_tensor.dim() != 1:
+                    print(f"    - CRITICAL WARNING Extractor: Slice {i} is not 1D! Shape: {s_tensor.shape}. This will likely cause errors.")
+
+            # --- Move audio slices to CPU and convert to NumPy arrays for the processor ---
+            print(f"    - DEBUG Extractor: Number of audio slices to process: {len(audio_slices_on_device)}")
+            audio_slices_for_processor = [s.cpu().numpy() for s in audio_slices_on_device]
+            # --------------------------------------------------------------------
+
+            print(f"    - Extracting embeddings for {len(texts)} segments...")
+            text_embeddings = self.text_embedder.encode(texts)  # (num_segments, 1, D)
+            
+            # Wav2VecAudioEmbedder's encode method calls the processor,
+            # which expects a list of 1D NumPy arrays or 1D CPU Tensors
+            audio_embeddings = self.audio_embedder.encode(audio_slices_for_processor, sampling_rate=self.target_sr)
+            print(f"    - Embedding extraction complete for {os.path.basename(audio_path)}.")
+
+            return text_embeddings, audio_embeddings
+
+        except Exception as e:
+            import traceback
+            print(f"    - Error during Feature Extraction for {os.path.basename(audio_path)}: {e}")
+            traceback.print_exc()
             return None, None
-                
-        full_waveform = self._load_audio(audio_path)  # full_waveform is on self.device
-
-        texts = []
-        audio_slices_on_device = [] 
-
-        print(f"    - Preparing text and audio slices for {os.path.basename(audio_path)}...")
-        for i, segment in enumerate(aligned_data):
-            texts.append(segment['sentence'])
-            slice_tensor = self._slice_audio(full_waveform, segment['start'], segment['end'])
-            audio_slices_on_device.append(slice_tensor)
-            # --- DEBUG ---
-            print(f"      DEBUG Extractor: Slice {i} for seg start {segment['start']:.2f} has shape {slice_tensor.shape}, dtype {slice_tensor.dtype}, device {slice_tensor.device}")
-            if slice_tensor.numel() == 0:
-                print(f"      WARNING Extractor: Slice {i} is empty (numel=0)!")
-            # --- END DEBUG ---
-        
-        if not texts:
-            print(f"    - Warning: No text sentences found in aligned data for {os.path.basename(audio_path)}. Skipping feature extraction.")
-            return None, None
-        
-        if not audio_slices_on_device:
-            print(f"    - Warning: No audio slices prepared for {os.path.basename(audio_path)}. Skipping feature extraction.")
-            return None, None
-        
-        for i, s_tensor in enumerate(audio_slices_on_device):
-            if s_tensor.dim() != 1:
-                print(f"    - CRITICAL WARNING Extractor: Slice {i} is not 1D! Shape: {s_tensor.shape}. This will likely cause errors.")
-
-        # --- Move audio slices to CPU and convert to NumPy arrays for the processor ---
-        print(f"    - DEBUG Extractor: Number of audio slices to process: {len(audio_slices_on_device)}")
-        audio_slices_for_processor = [s.cpu().numpy() for s in audio_slices_on_device]
-        # --------------------------------------------------------------------
-
-        print(f"    - Extracting embeddings for {len(texts)} segments...")
-        text_embeddings = self.text_embedder.encode(texts)  # (num_segments, 1, D)
-        
-        # Wav2VecAudioEmbedder's encode method calls the processor,
-        # which expects a list of 1D NumPy arrays or 1D CPU Tensors
-        audio_embeddings = self.audio_embedder.encode(audio_slices_for_processor, sampling_rate=self.target_sr)
-        print(f"    - Embedding extraction complete for {os.path.basename(audio_path)}.")
-
-        return text_embeddings, audio_embeddings
-
-    except Exception as e:
-        import traceback
-        print(f"    - Error during Feature Extraction for {os.path.basename(audio_path)}: {e}")
-        traceback.print_exc()
-        return None, None
 
 
 # --- Example Usage ---
