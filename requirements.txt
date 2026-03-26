@@ -1,0 +1,22 @@
+# ===================================================================
+# Requirements for ASR_SER Project
+# Based on the working environment established on 2025-07-05
+# Note: PyTorch should be installed manually first (see instructions)
+# ===================================================================
+
+# --- WhisperX and its key dependencies for Diarization ---
+whisperx==3.2.0
+pyannote.audio==3.1.1
+
+# --- NLP and Foundation Models ---
+transformers==4.39.3
+nltk==3.9.1
+sentencepiece==0.2.0
+
+# --- Core Scientific Computing ---
+# Pinned to a version before 2.0 to maintain compatibility with pyannote.audio
+numpy==1.26.4
+
+# --- Utility libraries used in the scripts ---
+pandas==2.2.3
+tqdm==4.67.1
