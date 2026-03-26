@@ -27,7 +27,7 @@ def setup_models(hf_token, vad_options=None):
     print(f"Using device: {device}")
 
     if vad_options:
-        print(f"WhisperX VAD is ENABLED with options: {7  }")
+        print(f"WhisperX VAD is ENABLED with options: {vad_options}")
     else:
         print("WhisperX VAD will use library defaults.")
 
